@@ -6,4 +6,7 @@ The core of the logic is contained in the ```k8s_yaml_obj.py```, which implement
 
 The generated YAML files can be then normally used through ```kubectl``` inline commands or within the desired script.
 
-For examples of end uses please refer to https://github.com/paoloalba/tf_model_dev, https://github.com/paoloalba/tf_web_api or https://github.com/paoloalba/image_segmentation_distributed
+For examples of end uses please refer to
+- https://github.com/paoloalba/dev_tf_model
+- https://github.com/paoloalba/tf_api
+- https://github.com/paoloalba/image_segmentation_distributed
