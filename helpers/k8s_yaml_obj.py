@@ -38,6 +38,11 @@ class K8EnvironmentVariableContainerRuntime(YAMLObject):
     def __init__(self, name, fieldPath):
         self.name = name
         self.valueFrom = {"fieldRef": {"fieldPath": fieldPath}}
+class K8EnvironmentVariableFromSecrets(YAMLObject):
+
+    def __init__(self, name, secret_name, secret_key):
+        self.name = name
+        self.valueFrom = {"secretKeyRef": {"name": secret_name, "key": secret_key}}
 class K8ContainerVolumeMount(YAMLObject):
 
     def __init__(self, name, mountPath):
@@ -53,24 +58,31 @@ class K8Container(YAMLObject):
                 image_tag,
                 env_var_list,
                 env_var_list_runtime,
+                env_var_list_fromsecrets,
                 vol_mounts_list,
                 res_handling):
         self.name = name
         self.image = "{0}/{1}:{2}".format(registry, image_name, image_tag)
         self.imagePullPolicy = "Always"
-        self.env = self.get_env_vars(env_var_list, env_var_list_runtime)
+        self.env = self.get_env_vars(env_var_list,
+                                    env_var_list_runtime,
+                                    env_var_list_fromsecrets)
         if vol_mounts_list:
             self.volumeMounts = self.get_vol_mounts(vol_mounts_list)
         if res_handling:
             self.resources = res_handling.__dict__
 
     @staticmethod
-    def get_env_vars(env_var_list, env_var_list_runtime):
+    def get_env_vars(env_var_list,
+                    env_var_list_runtime,
+                    env_var_list_fromsecrets):
         new_list = []
         for eee in env_var_list:
             new_list.append(K8EnvironmentVariable(eee[0], eee[1], eee[2]).__dict__)
         for eee in env_var_list_runtime:
             new_list.append(K8EnvironmentVariableContainerRuntime(eee[0], eee[1]).__dict__)
+        for eee in env_var_list_fromsecrets:
+            new_list.append(K8EnvironmentVariableFromSecrets(eee[0], eee[1], eee[2]).__dict__)
 
         return new_list
     @staticmethod
