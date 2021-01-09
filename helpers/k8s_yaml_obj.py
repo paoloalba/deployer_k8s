@@ -192,10 +192,20 @@ class K8Service(K8BaseResource):
 
     def fill_specification(self,
                             port_list,
-                            selector_dict):
+                            selector_dict,
+                            svc_type=None,
+                            static_ip=None,
+                            ip_whitelist=[]):
         spec_dict = {}
         spec_dict["ports"] = self.dictify_list(port_list)
         spec_dict["selector"] = selector_dict
+
+        if svc_type and svc_type.lower() == "loadbalancer":
+            spec_dict["type"] = svc_type
+            spec_dict["loadBalancerIP"] = static_ip
+            spec_dict["externalTrafficPolicy"] = "Local"
+            if len(ip_whitelist) > 0:
+                spec_dict["loadBalancerSourceRanges"] = [iii + "/32" for iii in ip_whitelist]
 
         self.spec = spec_dict
 class K8Job(K8BaseResource):
