@@ -16,6 +16,8 @@ def create_deploy(
     image_tag,
     version,
     connection_ports,
+    pmt_storage_secret_name,
+    postgres_secret_name,
     imgPullSecretName
     ):
 
@@ -30,16 +32,22 @@ def create_deploy(
     env_var_list.append(["MY_VERSION", version, ConversionType.quoted_string])
     env_var_list.append(["MY_ENVIRONMENT", "dev", ConversionType.normal])
     env_var_list.append(["IS_DOCKER", "y", ConversionType.quoted_string])
-    env_var_list.append(["FORCE_NEW_DB", "y", ConversionType.quoted_string])
-    env_var_list.append(["SQLITE_DB_NAME", "sicilian_cards_game", ConversionType.normal])
+    env_var_list.append(["IS_SQLITE_DB", "n", ConversionType.quoted_string])
 
     env_var_list_runtime = []
     env_var_list_runtime.append(["MY_NODE_NAME", "spec.nodeName"])
     env_var_list_runtime.append(["MY_POD_NAME", "metadata.name"])
 
+    env_var_list_fromsecrets = []
+    env_var_list_fromsecrets.append(["POSTGRES_USER", postgres_secret_name, "user"])
+    env_var_list_fromsecrets.append(["POSTGRES_PASSWORD", postgres_secret_name, "password"])
+    env_var_list_fromsecrets.append(["POSTGRES_HOST", postgres_secret_name, "host"])
+    env_var_list_fromsecrets.append(["POSTGRES_DBNAME", postgres_secret_name, "dbname"])
+
+
     vol_mounts_list = []
     vol_mounts_list.append([mounted_vol_name, mnt_volume_path])
-    volume_list = [K8Volume(mounted_vol_name, "storage", share_name)]
+    volume_list = [K8Volume(mounted_vol_name, pmt_storage_secret_name, share_name)]
 
     container_list = [
         K8Container(
@@ -49,6 +57,7 @@ def create_deploy(
             image_tag,
             env_var_list,
             env_var_list_runtime,
+            env_var_list_fromsecrets,
             vol_mounts_list,
             None)
         ]
@@ -86,6 +95,25 @@ def create_storage_secret(
     res_secret.fill_data(input_data_dict)
 
     return res_secret
+def create_postgres_secret(
+    secret_name,
+    user,
+    password,
+    host,
+    dbname):
+    metadata = {"name": secret_name}
+
+    res_secret = K8Secret(metadata)
+
+    input_data_dict = {}
+    input_data_dict["user"] = user
+    input_data_dict["password"] = password
+    input_data_dict["host"] = host
+    input_data_dict["dbname"] = dbname
+
+    res_secret.fill_data(input_data_dict)
+
+    return res_secret
 def write_res_to_file(file_path, input_resources_list):
     tag_strings = []
     tag_strings.append("!Service")
@@ -108,6 +136,8 @@ registry = ""
 version = "1.0.0"
 
 imgPullSecretName="acrregistry"
+postgres_secretname = "postgres"
+pmt_storage_secret_name = "storage"
 
 mounted_vol_name = "mountedvolume"
 share_name = "servercardgame"
@@ -130,6 +160,8 @@ all_resources.append(create_deploy(
                         image_tag,
                         version,
                         connection_ports,
+                        pmt_storage_secret_name,
+                        postgres_secretname,
                         imgPullSecretName
                         ))
 write_res_to_file(file_path, all_resources)
@@ -152,11 +184,13 @@ all_resources.append(create_deploy(
                         image_tag,
                         version,
                         connection_ports,
+                        pmt_storage_secret_name,
+                        postgres_secretname,
                         imgPullSecretName
                         ))
 write_res_to_file(file_path, all_resources)
 
-secret_name = "storage"
+secret_name = pmt_storage_secret_name
 account_name = ""
 account_key = ""
 file_path = "secret_{0}.yml".format(secret_name)
@@ -165,4 +199,19 @@ all_resources.append(create_storage_secret(
                         secret_name,
                         account_name,
                         account_key))
+write_res_to_file(file_path, all_resources)
+
+secret_name = postgres_secretname
+postgres_user = ""
+postgres_password = ""
+postgres_host = ""
+postgres_dbname = ""
+file_path = "secret_{0}.yml".format(secret_name)
+all_resources = []
+all_resources.append(create_postgres_secret(
+                        secret_name,
+                        postgres_user,
+                        postgres_password,
+                        postgres_host,
+                        postgres_dbname))
 write_res_to_file(file_path, all_resources)
