@@ -1,1 +1,4 @@
 azure_helpers/*
+*/**/__pycache__/*
+.vs/*
+*.yml
