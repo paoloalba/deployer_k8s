@@ -150,6 +150,24 @@ class K8BaseResource(YAMLObject):
         for iii in input_list:
             new_list.append(iii.__dict__)
         return new_list
+    @staticmethod
+    def write_to_file(file_path, input_resources_list):
+        tag_strings = []
+        tag_strings.append("!Service")
+        tag_strings.append("!Deployment")
+        tag_strings.append("!Job")
+        tag_strings.append("!Secret")
+
+        with open(file_path, "w") as f:
+            # yaml.dump(resource, f)
+            yml_string = yaml.dump_all(input_resources_list, None)
+            for sss in tag_strings:
+                yml_string = yml_string.replace(sss, "")
+            if yml_string.startswith("\n"):
+                yml_string = yml_string[1:]
+            yml_string = yml_string.replace("\'\"", "\'")
+            yml_string = yml_string.replace("\"\'", "\'")
+            f.write(yml_string)
 class K8Deployment(K8BaseResource):
 
     yaml_tag = u'!Deployment'
