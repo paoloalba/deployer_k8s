@@ -6,6 +6,11 @@ The core of the logic is contained in the ```k8s_yaml_obj.py```, which implement
 
 The generated YAML files can be then normally used through ```kubectl``` inline commands or within the desired script.
 
+## Pypi Installation
+The core can also be installed as pypi package: `pip install k8syaml`
+
+## Use cases
+
 For examples of end uses please refer to
 - https://github.com/paoloalba/dev_tf_model
 - https://github.com/paoloalba/tf_api

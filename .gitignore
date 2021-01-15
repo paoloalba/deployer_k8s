@@ -2,3 +2,6 @@ azure_helpers/*
 */**/__pycache__/*
 .vs/*
 *.yml
+dist/*
+build/*
+k8syaml.egg-info/*
