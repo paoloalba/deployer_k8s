@@ -3,10 +3,10 @@ import yaml
 
 from copy import deepcopy
 
-from helpers.k8s_yaml_obj import ConversionType
-from helpers.k8s_yaml_obj import K8Deployment, K8Job, K8Selector, K8ResourceHandling, K8Container, K8Volume
-from helpers.k8s_yaml_obj import K8Template, K8Service, K8Port
-from helpers.k8s_yaml_obj import K8Secret, K8SecretName
+from k8syaml.k8s_yaml_obj import ConversionType, K8BaseResource
+from k8syaml.k8s_yaml_obj import K8Deployment, K8Job, K8Selector, K8ResourceHandling, K8Container, K8Volume
+from k8syaml.k8s_yaml_obj import K8Template, K8Service, K8Port
+from k8syaml.k8s_yaml_obj import K8Secret, K8SecretName
 
 def create_job(
     app_name,
@@ -97,23 +97,6 @@ def create_storage_secret(
     res_secret.fill_data(input_data_dict)
 
     return res_secret
-def write_res_to_file(file_path, input_resources_list):
-    tag_strings = []
-    tag_strings.append("!Service")
-    tag_strings.append("!Deployment")
-    tag_strings.append("!Job")
-    tag_strings.append("!Secret")
-
-    with open(file_path, "w") as f:
-        # yaml.dump(resource, f)
-        yml_string = yaml.dump_all(input_resources_list, None)
-        for sss in tag_strings:
-            yml_string = yml_string.replace(sss, "")
-        if yml_string.startswith("\n"):
-            yml_string = yml_string[1:]
-        yml_string = yml_string.replace("\'\"", "\'")
-        yml_string = yml_string.replace("\"\'", "\'")
-        f.write(yml_string)
 def create_deploy(
     app_name,
     mounted_vol_name,
@@ -235,7 +218,7 @@ all_resources.append(create_job(
                         batch_size,
                         max_num_steps
                         ))
-write_res_to_file(file_path, all_resources)
+K8BaseResource.write_to_file(file_path, all_resources)
 
 secret_name = pmt_storage_secret_name
 account_name = ""
@@ -246,7 +229,7 @@ all_resources.append(create_storage_secret(
                         secret_name,
                         account_name,
                         account_key))
-write_res_to_file(file_path, all_resources)
+K8BaseResource.write_to_file(file_path, all_resources)
 
 app_name = "tensorboard"
 image_name = "tensorboard"
@@ -280,4 +263,4 @@ all_resources.extend(create_deploy(
                         static_ip_rg,
                         ip_whitelist
                         ))
-write_res_to_file(file_path, all_resources)
+K8BaseResource.write_to_file(file_path, all_resources)
