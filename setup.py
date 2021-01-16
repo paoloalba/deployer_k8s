@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="k8syaml",
-    version="0.1.1",
+    version="0.1.2",
     author="Paolo Alba",
     author_email="paoloalbag@gmail.com",
     description="Programmatic generation of yaml files for K8s' objects",
